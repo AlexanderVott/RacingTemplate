@@ -1,0 +1,4 @@
+<Vehicle id="0" identifier="Trophy" title="TrophyTruck" enabled="true" defaultLocked="false" cost="0" sort="1">
+    <icon>TrophyTruck</icon>
+    <prefab>TrophyTruck/Trophy</prefab>
+</Vehicle>
