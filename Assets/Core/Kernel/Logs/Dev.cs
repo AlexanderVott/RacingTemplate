@@ -178,8 +178,8 @@ namespace UnityEngine {
         }
 
         public void Initialize() {
-            Core.instance.OnApplicationQuitEvent -= Close;
-            Core.instance.OnApplicationQuitEvent += Close;
+            Core.Instance.OnApplicationQuitEvent -= Close;
+            Core.Instance.OnApplicationQuitEvent += Close;
         }
 
         public void ShowGroupStates() {

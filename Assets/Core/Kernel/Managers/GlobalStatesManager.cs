@@ -18,7 +18,7 @@ namespace RedDev.Kernel.Managers
 		public GlobalBaseState startingState;
 		#endregion
 
-		void Start()
+        private void Start()
 		{
 			InitializeStates();
 			if (startingState == null)

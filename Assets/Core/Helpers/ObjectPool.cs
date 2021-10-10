@@ -1,4 +1,4 @@
-﻿using RedDev.ManagersEngine;
+using RedDev.ManagersEngine;
 using UnityEngine;
 
 namespace RedDev.Helpers
@@ -31,7 +31,7 @@ namespace RedDev.Helpers
 
         public virtual void Push()
         {
-            PoolManager.instance.Push(Group, this);
+            PoolManager.Instance.Push(Group, this);
         }
 
         /// <summary>

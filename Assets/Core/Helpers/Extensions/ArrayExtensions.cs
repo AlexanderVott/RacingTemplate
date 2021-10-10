@@ -1,4 +1,4 @@
-﻿// source see https://github.com/Sonorh/AntNestProt/blob/dafc725037151d919105d1cbe28e5c4d04cfb87e/Assets/Plugins/UsefulThings/Extensions/ArrayExtensions.cs
+// source see https://github.com/Sonorh/AntNestProt/blob/dafc725037151d919105d1cbe28e5c4d04cfb87e/Assets/Plugins/UsefulThings/Extensions/ArrayExtensions.cs
 
 using UnityEngine;
 using System;
@@ -24,10 +24,8 @@ namespace RedDev.Helpers.Extensions
 			for (var i = 0; i < array.Length; ++i)
 			{
 				var r = UnityEngine.Random.Range(i, array.Length);
-				var tmp = array[i];
-				array[i] = array[r];
-				array[r] = tmp;
-			}
+				(array[i], array[r]) = (array[r], array[i]);
+            }
 		}
 
 		public static void MapMut<T>(this T[] array, Func<T, T> mutator)
@@ -85,10 +83,8 @@ namespace RedDev.Helpers.Extensions
 				return;
 			}
 
-			T tmp = array[i];
-			array[i] = array[j];
-			array[j] = tmp;
-		}
+			(array[i], array[j]) = (array[j], array[i]);
+        }
 	}
 
 	// "immutable" section can result one of it's arguments. So, at this point it have no pure immutable here. 
@@ -99,12 +95,12 @@ namespace RedDev.Helpers.Extensions
 		{
 			if (rhs.IsEmpty())
 			{
-				return (lhs == null) ? new T[0] : lhs;
+				return (lhs == null) ? Array.Empty<T>() : lhs;
 			}
 
 			if (lhs.IsEmpty())
 			{
-				return (rhs == null) ? new T[0] : rhs;
+				return (rhs == null) ? Array.Empty<T>() : rhs;
 			}
 
 			lhs = Resize(lhs, lhs.Length + rhs.Length);
@@ -242,7 +238,7 @@ namespace RedDev.Helpers.Extensions
 		{
 			if (array.IsEmpty())
 			{
-				return new E[0];
+				return Array.Empty<E>();
 			}
 
 			return Array.ConvertAll(array, convertor);
@@ -252,12 +248,12 @@ namespace RedDev.Helpers.Extensions
 		{
 			if (count <= 0)
 			{
-				return (array == null) ? new T[0] : array;
+				return (array == null) ? Array.Empty<T>() : array;
 			}
 
 			if ((array.IsEmpty()) || (count >= array.Length))
 			{
-				return new T[0];
+				return Array.Empty<T>();
 			}
 
 			var result = new T[array.Length - count];
@@ -269,12 +265,12 @@ namespace RedDev.Helpers.Extensions
 		{
 			if (count <= 0)
 			{
-				return (array == null) ? new T[0] : array;
+				return (array == null) ? Array.Empty<T>() : array;
 			}
 
 			if ((array.IsEmpty()) || (count >= array.Length))
 			{
-				return new T[0];
+				return Array.Empty<T>();
 			}
 
 			var result = new T[array.Length - count];
@@ -296,7 +292,7 @@ namespace RedDev.Helpers.Extensions
 		{
 			if (array.IsEmpty())
 			{
-				return new T[0];
+				return Array.Empty<T>();
 			}
 
 			return Array.FindAll(array, predicate);
@@ -306,7 +302,7 @@ namespace RedDev.Helpers.Extensions
 		{
 			if (array.IsEmpty())
 			{
-				return new T[0];
+				return Array.Empty<T>();
 			}
 
 			return Array.FindAll(array, el => (el != null) && predicate(el));
@@ -316,7 +312,7 @@ namespace RedDev.Helpers.Extensions
 		{
 			if (array.IsEmpty())
 			{
-				return new T[0];
+				return Array.Empty<T>();
 			}
 
 			var count = array.CountInternal(predicate);
@@ -337,7 +333,7 @@ namespace RedDev.Helpers.Extensions
 			return result;
 		}
 
-		public static T First<T>(this T[] array)
+		public static T FindFirst<T>(this T[] array)
 		{
 			if (array.IsEmpty())
 			{
@@ -361,7 +357,7 @@ namespace RedDev.Helpers.Extensions
 		{
 			if (array.IsEmpty())
 			{
-				return new T[0];
+				return Array.Empty<T>();
 			}
 
 			return Array.FindAll(array, predicate);
@@ -394,7 +390,23 @@ namespace RedDev.Helpers.Extensions
 			return -1;
 		}
 
-		public static int FindLast<T>(this T[] array, T value)
+        public static int FindFirstIndex<T>(this T[] array, T value) {
+            if (array.IsEmpty()) {
+                return -1;
+            }
+
+            return Array.IndexOf(array, value);
+        }
+
+        public static int FindLastIndex<T>(this T[] array, T value) {
+            if (array.IsEmpty()) {
+                return -1;
+            }
+
+            return Array.LastIndexOf(array, value);
+        }
+
+        public static int FindLast<T>(this T[] array, T value)
 		{
 			if (array.IsEmpty())
 			{
@@ -471,6 +483,27 @@ namespace RedDev.Helpers.Extensions
 			return (array != null) && (array.Length != 0);
 		}
 
+        public static T[] Insert<T>(this T[] lhs, int index, T value) {
+            if (lhs.IsEmpty())
+                return new T[] { value };
+
+            if (index < 0)
+                index = 0;
+
+            if (index > lhs.Length)
+                index = lhs.Length;
+
+            var result = new T[lhs.Length + 1];
+            if (index > 0)
+                Array.Copy(lhs, 0, result, 0, index);
+
+            result[index] = value;
+            if (index < lhs.Length)
+                Array.Copy(lhs, index, result, index + 1, lhs.Length - index);
+
+            return result;
+        }
+
 		public static bool SequenceEqual<T>(this T[] array, T[] target)
 		{
 			if (array.IsEmpty() && target.IsEmpty())
@@ -497,7 +530,7 @@ namespace RedDev.Helpers.Extensions
 		{
 			if (array.IsEmpty())
 			{
-				return new T[0];
+				return Array.Empty<T>();
 			}
 
 			return Array.ConvertAll(array, mutator);
@@ -507,7 +540,7 @@ namespace RedDev.Helpers.Extensions
 		{
 			if ((array.IsEmpty()) || (index < 0) || (index >= array.Length))
 			{
-				return (array == null) ? new T[0] : array;
+				return (array == null) ? Array.Empty<T>() : array;
 			}
 
 			var result = new T[array.Length - 1];
@@ -529,7 +562,7 @@ namespace RedDev.Helpers.Extensions
 		{
 			if (array.IsEmpty())
 			{
-				return (array == null) ? new T[0] : array;
+				return (array == null) ? Array.Empty<T>() : array;
 			}
 
 			return Array.FindAll(array, (x) => x != value);
@@ -539,7 +572,7 @@ namespace RedDev.Helpers.Extensions
 		{
 			if (array.IsEmpty())
 			{
-				return (array == null) ? new T[0] : array;
+				return (array == null) ? Array.Empty<T>() : array;
 			}
 
 			return Array.FindAll(array, (x) => !x.Equals(value));
@@ -554,7 +587,7 @@ namespace RedDev.Helpers.Extensions
 
 			if (newSize <= 0)
 			{
-				return new T[0];
+				return Array.Empty<T>();
 			}
 
 			var result = new T[newSize];
@@ -631,7 +664,7 @@ namespace RedDev.Helpers.Extensions
 		{
 			if (array.IsEmpty())
 			{
-				return new T[2][] { new T[0], new T[0] };
+				return new T[2][] { Array.Empty<T>(), Array.Empty<T>() };
 			}
 
 			var count = array.CountInternal(predicate);
@@ -671,7 +704,7 @@ namespace RedDev.Helpers.Extensions
 					src = src.Resize(dstLength);
 				}
 			}
-			return (src == null) ? new T[0] : src;
+			return (src == null) ? Array.Empty<T>() : src;
 		}
 
 		public static T[] Copy<T>(this T[] array)
@@ -682,7 +715,7 @@ namespace RedDev.Helpers.Extensions
 			}
 			if (array.Length == 0)
 			{
-				return new T[0];
+				return Array.Empty<T>();
 			}
 
 			var copy = new T[array.Length];

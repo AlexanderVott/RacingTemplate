@@ -1,69 +1,123 @@
+using System;
+using System.Dynamic;
+using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 
 namespace RedDev.Helpers {
+    public interface IKeepAliveMonoBehaviourSingleton { }
+
+    public interface IAlwaysAccessibleOnQuit { }
+
     public class Singleton<T> : MonoBehaviour where T : MonoBehaviour {
-        protected static T _instance;
-        private static object _lock = new object();
+        public static bool isQuitting = false;
+        public static bool isInitialized = false;
 
-        public static bool changingScene { get; set; } = false;
-        private static bool _appIsQuitting = false;
+        private static T _instance;
 
-        public static T instance {
+        public static T Instance {
             get {
-                if (_appIsQuitting) {
-                    Prod.LogWarning(
-                        $"[Singleton] Instance '{typeof(T)}' already destroyd on application quit. Won't create again - returning null.");
-                    return null;
-                }
-
-                lock (_lock) {
-                    if (_instance == null) {
-                        var type = typeof(T);
-                        _instance = (T) FindObjectOfType(type);
-
-                        if (FindObjectsOfType(type).Length > 1) {
-                            Dev.LogError(
-                                "[Singleton] Something went really wrong - there should never be more than 1 singleton! Reopenning the scene might fix it.");
-                            return _instance;
-                        }
-
-                        if (_instance == null) {
-                            var singleton = new GameObject();
-                            singleton.name = type.Name;
-                            _instance = singleton.AddComponent<T>();
-
-                            Dev.Log(
-                                $"[Singleton] An instance of {typeof(T)} is needed in the scene, so '{singleton}' was created wih DontDestroyOnLoad.");
-                        }
-                        else {
-                            Dev.Log($"[Singleton] Using instance already created: {_instance.gameObject.name}");
-                        }
-
-                        if (Application.isPlaying)
-                            DontDestroyOnLoad(_instance.gameObject);
+                if (isQuitting) {
+                    if (_instance is IAlwaysAccessibleOnQuit) {
+                        return _instance;
                     }
-
-                    return _instance;
+                    else {
+                        return null;
+                    }
                 }
+
+                return _instance ?? CreateInstance();
             }
         }
 
-        public static bool IsQuittingOrChangingScene() {
-            return _appIsQuitting || changingScene;
-        }
+        protected virtual void Awake() {
+            if (_instance == null || _instance == this) {
+                _instance = this as T;
 
-        protected virtual void Initialization() { }
-
-        protected virtual void Finalization() { }
-
-        private void Awake() {
-            DontDestroyOnLoad(gameObject);
-            Initialization();
+                try {
+                    if (!isInitialized) {
+                        Initialization();
+                    }
+                }
+                catch (Exception e) {
+                    Prod.LogException(e);
+                }
+                finally {
+                    isInitialized = true;
+                }
+            } else 
+                Destroy(gameObject);
         }
 
         private void OnDestroy() {
-            Finalization();
-            _appIsQuitting = true;
+            try {
+                if (this == _instance) {
+                    try {
+                        Finalization();
+                    }
+                    catch (Exception e) {
+                        Prod.LogException(e);
+                    }
+                    finally {
+                        isInitialized = false;
+                    }
+                }
+            }
+            catch (Exception e) {
+                Prod.LogException(e);
+            }
+
+            if (this == _instance)
+                _instance = null;
         }
+
+        protected virtual void OnApplicationQuit() {
+            isQuitting = true;
+        }
+
+        protected virtual void Initialization() {}
+
+        protected virtual void Finalization() {}
+
+        private static T CreateInstance() {
+            if (_instance == null) {
+                try {
+                    _instance = FindObjectOfType<T>() as T;
+                }
+                catch (Exception e) {
+                    Prod.LogException(e);
+                }
+                finally {
+                    if (Application.isPlaying) {
+                        if (_instance == null) {
+                            Prod.Print(AlertLevel.Notify, "Singleton", $"Creating {typeof(T).Name}");
+                        }
+                        else {
+                            // кейс, когда мы запрашиваем GameObject, который реально уже существует на сцене, но для которого еще не был вызван Awake:
+                            // нам придется его удалить, и создать новый с насильным запуском Awake, чтобы все процедуры отработали штатно прямо сейчас
+                            _instance.gameObject.SetActive(false);
+                            Destroy(_instance.gameObject);
+                            _instance = null;
+
+                            Prod.Print(AlertLevel.Warning, "Singleton", $"Force creating {typeof(T).Name}");
+                        }
+
+                        var gObj = (typeof(T).GetInterface(nameof(IKeepAliveMonoBehaviourSingleton)) != null)
+                                       ? UtilsGameObject.GetPermanent(typeof(T).Name)
+                                       : UtilsGameObject.GetTemp(typeof(T).Name);
+
+                        // хукаемся так, чтобы m_instance заполнился ДО вызова Awake,
+                        // тем самым делая неважным порядок вызова Awake в наследовании
+                        gObj.SetActive(false);
+                        _instance = gObj.AddComponent<T>();
+                        gObj.SetActive(true);
+                    }
+                }
+            }
+
+            return _instance;
+        }
+
+        public static bool HasInstance => (!isQuitting || (_instance is IAlwaysAccessibleOnQuit)) && _instance != null;
     }
 }

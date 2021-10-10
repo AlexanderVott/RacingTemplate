@@ -41,7 +41,7 @@ namespace RedDev.Kernel.Managers
 		{
 			var innerType = typeof(T);
 			var hash = innerType.GetHashCode();
-			var inst = instance;
+			var inst = Instance;
 			if (!inst._managers.TryGetValue(hash, out var obj))
 			{
 				var gobj = new GameObject(innerType.Name);
@@ -64,7 +64,7 @@ namespace RedDev.Kernel.Managers
 		{
 			var innerType = obj.GetType();
 			var hash = innerType.GetHashCode();
-			var inst = instance;
+			var inst = Instance;
 
 			if (inst._managers.TryGetValue(hash, out var result))
 				return result;
@@ -76,9 +76,9 @@ namespace RedDev.Kernel.Managers
 
 		public static void AttachManagers()
 		{
-			foreach (var key in instance._managers.Keys)
+			foreach (var key in Instance._managers.Keys)
 			{
-				var man = instance._managers[key];
+				var man = Instance._managers[key];
 				if (man != null && !man.Initialized)
 					man.Attach();
 			}
@@ -93,11 +93,9 @@ namespace RedDev.Kernel.Managers
 		/// <returns>Возвращает true, если удалось удалить менеджер из ядра.</returns>
 		public static bool Remove<T>(Type type = null) where T : BaseManager
 		{
-			if (IsQuittingOrChangingScene())
-				return false;
 			var innerType = type == null ? typeof(T) : type;
 			var hash = innerType.GetHashCode();
-			return instance._managers.Remove(hash);
+			return Instance._managers.Remove(hash);
 		}
 
 		/// <summary>
@@ -107,8 +105,7 @@ namespace RedDev.Kernel.Managers
 		/// <returns>Возвращает true, если удалось удалить менеджер из ядра.</returns>
 		public static bool Remove(object obj)
 		{
-			return !IsQuittingOrChangingScene() && 
-				instance._managers.Remove(obj.GetType().GetHashCode());
+			return Instance._managers.Remove(obj.GetType().GetHashCode());
 		}
 		#endregion
 
@@ -122,7 +119,7 @@ namespace RedDev.Kernel.Managers
 		{
 			var innerType = type == null ? typeof(T) : type;
 			var hash = innerType.GetHashCode();
-			instance._managers.TryGetValue(hash, out var result);
+			Instance._managers.TryGetValue(hash, out var result);
 			return result as T;
 		}
 
@@ -136,13 +133,13 @@ namespace RedDev.Kernel.Managers
 		{
 			if (type == null)
 				type = typeof(T);
-			return instance._managers.ContainsKey(type.GetHashCode());
+			return Instance._managers.ContainsKey(type.GetHashCode());
 		}
 
 		/// <summary>
 		/// Очищает полностью ядро от менеджеров.
 		/// </summary>
-		public static void Clear() => instance._managers.Clear();
+		public static void Clear() => Instance._managers.Clear();
 
         /// <summary>
 		/// Удаляет игровые сессионные менеджеры из ядра.
@@ -150,9 +147,9 @@ namespace RedDev.Kernel.Managers
 		public static void ClearSession()
 		{
 			var toWipe = new List<int>();
-			var inst = instance;
+			var inst = Instance;
 
-			foreach (var man in instance._managers)
+			foreach (var man in Instance._managers)
 			{
 				if (man.Value is IMustBeWipedOut)
 				{

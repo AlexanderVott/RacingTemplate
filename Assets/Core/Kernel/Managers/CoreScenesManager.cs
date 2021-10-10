@@ -21,13 +21,16 @@ namespace RedDev.Kernel.Managers
 		private List<string> _scenesDependsOn = new List<string>();
 
 		public Dictionary<string, Scene> scenes { get; } = new Dictionary<string, Scene>();
-		#endregion
 
-		public Action<Scene> sceneLoaded;
+        private bool changingScene = false;
+        public bool ChangingScene => changingScene;
+        #endregion
+
+        public Action<Scene> sceneLoaded;
 		public Action sceneClosing;
 		public Action<Scene, Scene> activeSceneChanged;
 
-		public Scene this[string sceneName] => scenes.TryGetValue(sceneName, out var result) ? result : new Scene();
+        public Scene this[string sceneName] => scenes.TryGetValue(sceneName, out var result) ? result : new Scene();
 		public Scene this[int indexer] => SceneManager.GetSceneAt(indexer);
 
 		public int Count => scenes.Count;
@@ -56,7 +59,7 @@ namespace RedDev.Kernel.Managers
 			SceneManager.sceneUnloaded += SceneUnloadedHandler;
 			SceneManager.sceneLoaded += SceneLoadedHandler;
 
-			Core.instance.StartCoroutine(Setup(bootstrap));
+			Core.Instance.StartCoroutine(Setup(bootstrap));
 		}
 
 		private void ActiveSceneChangedHandler(Scene current, Scene next)
@@ -210,7 +213,7 @@ namespace RedDev.Kernel.Managers
 		private IEnumerator LoadCoroutine(string sceneName)
 		{
 			//sceneClosing();
-			Core.changingScene = true;
+			changingScene = true;
 			Core.ClearSession();
 
 			var currentActive = SceneManager.GetActiveScene();
@@ -234,13 +237,13 @@ namespace RedDev.Kernel.Managers
 
 			SceneManager.SetActiveScene(SceneManager.GetSceneByName(sceneName));
 			job.allowSceneActivation = true;
-			Core.changingScene = false;
+			changingScene = false;
 		}
 
 		private IEnumerator LoadCoroutine(int id)
 		{
 			//sceneClosing();
-			Core.changingScene = true;
+			changingScene = true;
 			Core.ClearSession();
 
 			var currentActive = SceneManager.GetActiveScene();
@@ -275,23 +278,23 @@ namespace RedDev.Kernel.Managers
 
 			SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(id));
 			job.allowSceneActivation = true;
-			Core.changingScene = false;
+			changingScene = false;
 		}
 
 		private IEnumerator AddCoroutine(int id)
 		{
-			Core.changingScene = true;
+			changingScene = true;
 
 			var job = SceneManager.LoadSceneAsync(id, LoadSceneMode.Additive);
 			while (!job.isDone)
 				yield return null;
 			
-			Core.changingScene = false;
+			changingScene = false;
 		}
 
 		private IEnumerator RemoveCoroutine(int id)
 		{
-			Core.changingScene = true;
+			changingScene = true;
 
 			var scene = SceneManager.GetSceneByBuildIndex(id);
 			if (scenes.ContainsKey(scene.name))
@@ -301,7 +304,7 @@ namespace RedDev.Kernel.Managers
 			while (job.isDone)
 				yield return null;
 
-			Core.changingScene = false;
+			changingScene = false;
 		}
 		#endregion
 	}
