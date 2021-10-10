@@ -30,7 +30,7 @@ namespace RedDev.Helpers
 
 		public static bool saveOnExit { get; set; }
 
-		public static TD instance
+		public static TD Instance
 		{
 			get
 			{

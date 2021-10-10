@@ -1,8 +1,5 @@
 using System;
-using System.Dynamic;
-using UnityEditorInternal;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 
 namespace RedDev.Helpers {
     public interface IKeepAliveMonoBehaviourSingleton { }
@@ -45,8 +42,9 @@ namespace RedDev.Helpers {
                 finally {
                     isInitialized = true;
                 }
-            } else 
+            } else {
                 Destroy(gameObject);
+            }
         }
 
         private void OnDestroy() {

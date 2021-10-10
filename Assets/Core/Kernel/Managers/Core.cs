@@ -18,14 +18,14 @@ namespace RedDev.Kernel.Managers
         public bool IsApplicationQuitting { private set; get; } = false;
         public Action OnApplicationQuitEvent;
 
-        private void Awake()
-		{
+        protected override void Awake() {
+            base.Awake();
 			var handMakedManagers = GetComponentsInChildren<BaseManager>();
 			foreach (var manager in handMakedManagers)
 				Add(manager);
 		}
 
-        private void OnApplicationQuit() {
+        protected override void OnApplicationQuit() {
             Prod.Log("Handle OnApplicationQuit", this);
             IsApplicationQuitting = true;
             OnApplicationQuitEvent?.Invoke();
