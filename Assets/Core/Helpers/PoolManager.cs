@@ -1,4 +1,4 @@
-﻿using RedDev.Helpers;
+using RedDev.Helpers;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -20,8 +20,9 @@ namespace RedDev.ManagersEngine
         /// </summary>
         public Pool<string, ObjectPool> Pool { get { return _pool; } }
 
-        protected virtual void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             _pool = new Pool<string, ObjectPool>(MaxInstanceCount);
             SceneManager.sceneLoaded += (scene, mode) =>
             {
