@@ -15,7 +15,6 @@ namespace RedDev.Kernel {
 
         private void Start() {
             Core.Add<SystemEventsManager>();
-            Core.Add<BundlesManager>();
             Core.Add<PrefsManager>();
             Core.Add<DBManager>();
             Core.Add<CoreScenesManager>();
