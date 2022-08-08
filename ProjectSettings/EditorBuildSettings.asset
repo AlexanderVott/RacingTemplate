@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/MicroCars/Resources/Scenes/Start.unity
+    path: Assets/Game/Resources/Scenes/Start.unity
     guid: 743272653f51619499b56b6e5b712538
   m_configObjects: {}

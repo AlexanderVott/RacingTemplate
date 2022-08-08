@@ -22,10 +22,10 @@ namespace RVP {
             Screen.autorotateToPortraitUpsideDown = screenRot == ScreenOrientation.PortraitUpsideDown ||
                                                     screenRot == ScreenOrientation.AutoRotation;
             Screen.autorotateToLandscapeRight = screenRot == ScreenOrientation.LandscapeRight ||
-                                                screenRot == ScreenOrientation.Landscape ||
+                                                screenRot == ScreenOrientation.LandscapeLeft ||
                                                 screenRot == ScreenOrientation.AutoRotation;
             Screen.autorotateToLandscapeLeft = screenRot == ScreenOrientation.LandscapeLeft ||
-                                               screenRot == ScreenOrientation.Landscape ||
+                                               screenRot == ScreenOrientation.LandscapeLeft ||
                                                screenRot == ScreenOrientation.AutoRotation;
             Screen.orientation = screenRot;
         }
